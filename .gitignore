@@ -129,3 +129,8 @@ dist
 .pnp.*
 
 .idea
+*.js
+*.js.map
+
+bin/
+lib/

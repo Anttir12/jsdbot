@@ -1,22 +1,17 @@
-{
-	"extends": "eslint:recommended",
-	"env": {
-		"node": true,
-		"es6": true
-	},
-	"parserOptions": {
-		"ecmaVersion": 2021
-	},
-	"rules": {
+module.exports = {
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
+  root: true,
+  rules: {
         "arrow-spacing": ["warn", { "before": true, "after": true }],
-		"brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
+//		"brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
 		"comma-dangle": ["error", "always-multiline"],
 		"comma-spacing": "error",
 		"comma-style": "error",
 		"curly": ["error", "multi-line", "consistent"],
 		"dot-location": ["error", "property"],
 		"handle-callback-err": "off",
-		"indent": ["error", "tab"],
 		"keyword-spacing": "error",
 		"max-nested-callbacks": ["error", { "max": 4 }],
 		"max-statements-per-line": ["error", { "max": 2 }],
@@ -46,4 +41,4 @@
 		"spaced-comment": "error",
 		"yoda": "error"
 	}
-}
+};

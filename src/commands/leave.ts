@@ -1,7 +1,8 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { getVoiceConnection } = require('@discordjs/voice');
+import { SlashCommandBuilder } from 'discord.js';
+import { getVoiceConnection } from '@discordjs/voice';
+import {Command} from "./command";
 
-module.exports = {
+const command: Command = {
 	data: new SlashCommandBuilder().setName('leave').setDescription('Leaves voice channel'),
 	async execute(interaction) {
 		const connection = getVoiceConnection(interaction.guild.id);
@@ -14,3 +15,5 @@ module.exports = {
 		}
 	},
 };
+
+export { command };

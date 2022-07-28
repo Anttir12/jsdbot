@@ -1,6 +1,7 @@
-const { SlashCommandBuilder } = require('discord.js');
+import { SlashCommandBuilder } from 'discord.js';
+import {Command} from "./command";
 
-module.exports = {
+const command: Command = {
 	data: new SlashCommandBuilder().setName('user').setDescription('Prints user info'),
 	async execute(interaction) {
 		const user = interaction.user;
@@ -10,3 +11,5 @@ module.exports = {
 		Created at: ${user.createdAt}`);
 	},
 };
+
+export { command };

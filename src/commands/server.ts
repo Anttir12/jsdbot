@@ -1,6 +1,7 @@
-const { SlashCommandBuilder } = require('discord.js');
+import { SlashCommandBuilder } from 'discord.js';
+import {Command} from "./command";
 
-module.exports = {
+const command: Command = {
 	data: new SlashCommandBuilder().setName('server').setDescription('Prints server info'),
 	async execute(interaction) {
 		const guild = interaction.guild;
@@ -11,3 +12,5 @@ module.exports = {
 		Verification Level: ${guild.verificationLevel}`);
 	},
 };
+
+export { command };
