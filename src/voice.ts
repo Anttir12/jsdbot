@@ -1,7 +1,6 @@
 import { createAudioPlayer, createAudioResource } from '@discordjs/voice';
 import { createClient } from 'redis';
 import 'dotenv/config';
-import { v4 as uuid } from 'uuid';
 
 interface SoundItem {
     path: string,
@@ -12,7 +11,7 @@ interface SoundItem {
 
 const player = createAudioPlayer();
 const r = createClient({
-    url: 'redis://localhost:6379/7',
+    url: process.env.REDIS_URL,
 });
 
 
