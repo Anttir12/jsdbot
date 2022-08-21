@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {ChatInputCommandInteraction, GuildMember, SlashCommandBuilder} from 'discord.js';
 import {AudioReceiveStream, EndBehaviorType, getVoiceConnection} from '@discordjs/voice';
 import * as prism from 'prism-media';
@@ -45,8 +46,8 @@ const command: Command = {
 							behavior: EndBehaviorType.Manual,
 						},
 					});
-					const ws = websocket("ws://localhost:8000/stt/?wsToken="+wsToken)
-					console.log("Starting to listen!")
+					const ws = websocket(`${process.env.DBOT_LISTEN_STREAM}?wsToken=${wsToken}`)
+
 
 					currentlyListening[userId] = {stream: opusStream, webSocket: ws};
 
@@ -62,6 +63,7 @@ const command: Command = {
 
 					ws.on('open', () => {
 						console.log("Opened WebSocket connection!")
+						console.log("Starting to listen!")
 					})
 
 					ws.on('error', (err) => {
