@@ -40,7 +40,7 @@ const refreshAccessToken = async () => {
         }, {
             headers: {Accept: 'application/json'},
         });
-        if(tokenResponse && tokenResponse.status >= 200 && tokenResponse.status < 200){
+        if(tokenResponse && tokenResponse.status >= 200 && tokenResponse.status < 300){
             currentTokens.access = tokenResponse.data.access;
         }
     } catch (e) {
@@ -48,6 +48,21 @@ const refreshAccessToken = async () => {
         console.log("Failed to refresh access tokens.")
         setTimeout(getTokens, 5000);
     }
+}
+
+export const getWsToken = async () => {
+    let wsToken = null
+    try {
+        const response = await axios.post(BASE_URL + 'token/ws', {},
+            {headers: {Authorization: 'Bearer ' + currentTokens.access}});
+        if(response && response.status >= 200 && response.status < 300){
+            wsToken = response.data.token;
+        }
+    } catch (e) {
+        console.log("Failed to get ws token.")
+        console.log(e.response)
+    }
+    return wsToken
 }
 
 
@@ -59,10 +74,17 @@ export const initialiseDbotClient = async () => {
 
 export const play = async (ytUrl: string, volume?: number): Promise<boolean> => {
     if(!currentTokens){
-        return false
+        return false;
     }
-    const response = await axios.post(BASE_URL + 'bot/play_yt', {yt_url: ytUrl, volume: volume},
+    try {
+        const response = await axios.post(BASE_URL + 'bot/play_yt', {yt_url: ytUrl, volume: volume},
         {headers: {Authorization: 'Bearer ' + currentTokens.access}});
-    console.log("Response status for play: " + response.status);
-    return response.status >= 200 && response.status < 300;
+        console.log("Response status for play: " + response.status);
+        return response.status >= 200 && response.status < 300;
+    } catch (e) {
+        console.log("Play failed")
+        console.log(e.response)
+        return false;
+    }
+
 }

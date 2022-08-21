@@ -3,6 +3,7 @@ import {AudioReceiveStream, EndBehaviorType, getVoiceConnection} from '@discordj
 import * as prism from 'prism-media';
 import { Command } from "./command";
 import * as websocket from 'websocket-stream';
+import {getWsToken} from "../dbot-client";
 
 interface AudioListener {
 	stream: AudioReceiveStream
@@ -36,45 +37,50 @@ const command: Command = {
 					await interaction.reply({ content: 'Already listening you!', ephemeral: true });
 				}
 			} else {
-				const connection = getVoiceConnection(voiceChannel.guild.id);
-				const opusStream = connection.receiver.subscribe(userId, {
-					end: {
-						behavior: EndBehaviorType.Manual,
-					},
-				});
-				const ws = websocket("ws://localhost:8000/stt/")
-				console.log("Starting to listen!")
+				const wsToken = await getWsToken();
+				if(wsToken) {
+					const connection = getVoiceConnection(voiceChannel.guild.id);
+					const opusStream = connection.receiver.subscribe(userId, {
+						end: {
+							behavior: EndBehaviorType.Manual,
+						},
+					});
+					const ws = websocket("ws://localhost:8000/stt/?wsToken="+wsToken)
+					console.log("Starting to listen!")
 
-				currentlyListening[userId] = {stream: opusStream, webSocket: ws};
+					currentlyListening[userId] = {stream: opusStream, webSocket: ws};
 
-				const oggStream = new prism.opus.OggLogicalBitstream({
-					opusHead: new prism.opus.OpusHead({
-						channelCount: 2,
-						sampleRate: 48000,
-					}),
-					pageSizeControl: {
-						maxPackets: 10,
-					},
-				});
+					const oggStream = new prism.opus.OggLogicalBitstream({
+						opusHead: new prism.opus.OpusHead({
+							channelCount: 2,
+							sampleRate: 48000,
+						}),
+						pageSizeControl: {
+							maxPackets: 10,
+						},
+					});
 
-				ws.on('open', () => {
-					console.log("Opened WebSocket connection!")
-				})
+					ws.on('open', () => {
+						console.log("Opened WebSocket connection!")
+					})
 
-				ws.on('error', (err) => {
-					console.log("Websocket error!")
-					console.log(err)
-					killListening(userId)
-				})
+					ws.on('error', (err) => {
+						console.log("Websocket error!")
+						console.log(err)
+						killListening(userId)
+					})
 
-				ws.on('closed', () => {
-					console.log("Closed WebSocket connection!")
-					killListening(userId)
-				})
+					ws.on('closed', () => {
+						console.log("Closed WebSocket connection!")
+						killListening(userId)
+					})
 
-				opusStream.pipe(oggStream).pipe(ws);
+					opusStream.pipe(oggStream).pipe(ws);
 
-				await interaction.reply({content: 'Listening you!', ephemeral: true});
+					await interaction.reply({content: 'Listening you!', ephemeral: true});
+				} else {
+					await interaction.reply({content: 'Failed to get WS token', ephemeral: true})
+				}
 			}
 		}
 		else {
