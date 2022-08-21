@@ -29,6 +29,7 @@ const getTokens = async () => {
     } catch (e) {
         currentTokens = null;
         console.log("Failed to get tokens.")
+        console.log(e.response)
         setTimeout(getTokens, 10000);
     }
 }
@@ -46,6 +47,7 @@ const refreshAccessToken = async () => {
     } catch (e) {
         currentTokens = null;
         console.log("Failed to refresh access tokens.")
+        console.log(e.response)
         setTimeout(getTokens, 5000);
     }
 }
