@@ -7,7 +7,7 @@ import 'dotenv/config';
 import {Command} from "./commands/command";
 import {greetings, initialiseDbotClient, welcome} from "./dbot-client";
 import {initialiseVoiceThing, player, r} from "./voice";
-import {joinVoiceChannel} from "@discordjs/voice";
+import {getVoiceConnection, joinVoiceChannel} from "@discordjs/voice";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 
@@ -72,7 +72,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 			console.log("Leaving voice soon...");
 			setTimeout(() => {
 				if(oldState.channel.members.size < 2) {
-					newState.guild.members.me.voice?.disconnect()
+					const connection = getVoiceConnection(newState.guild.id);
+					connection.destroy();
 					console.log("Left voice");
 				} else {
 					console.log("Never mind. I'm no longer alone");
