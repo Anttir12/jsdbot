@@ -88,5 +88,36 @@ export const play = async (ytUrl: string, volume?: number): Promise<boolean> => 
         console.log(e.response)
         return false;
     }
+}
 
+export const welcome = async (userId: string): Promise<boolean> => {
+    if(!currentTokens){
+        return false;
+    }
+    try {
+        const response = await axios.post(BASE_URL + 'bot/discord_event/welcome', {user_id: userId},
+        {headers: {Authorization: 'Bearer ' + currentTokens.access}});
+        console.log("Response status for welcome: " + response.status);
+        return response.status >= 200 && response.status < 300;
+    } catch (e) {
+        console.log("welcome failed")
+        console.log(e.response)
+        return false;
+    }
+}
+
+export const greetings = async (): Promise<boolean> => {
+    if(!currentTokens){
+        return false;
+    }
+    try {
+        const response = await axios.post(BASE_URL + 'bot/discord_event/greetings', {},
+        {headers: {Authorization: 'Bearer ' + currentTokens.access}});
+        console.log("Response status for greetings: " + response.status);
+        return response.status >= 200 && response.status < 300;
+    } catch (e) {
+        console.log("greetings failed")
+        console.log(e.response)
+        return false;
+    }
 }

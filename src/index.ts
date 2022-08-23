@@ -5,8 +5,9 @@ import { Client, GatewayIntentBits, Collection } from 'discord.js';
 
 import 'dotenv/config';
 import {Command} from "./commands/command";
-import {initialiseDbotClient} from "./dbot-client";
-import {initialiseVoiceThing} from "./voice";
+import {greetings, initialiseDbotClient, welcome} from "./dbot-client";
+import {initialiseVoiceThing, player, r} from "./voice";
+import {joinVoiceChannel} from "@discordjs/voice";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 
@@ -53,11 +54,44 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-	//console.log("voice state updated");
-	//console.log("Old state");
-	//console.log(oldState);
-	//console.log('newState');
-	//console.log(newState);*/
+	const triggeredByBot = newState.member.user.id === client.user.id;
+	const botInVoice = Boolean(newState.guild.members.me.voice.channel);
+	const botInNewChannel = botInVoice && newState.channel?.members.some(member => member.user.id === client.user.id);
+	const botInOldChannel = botInVoice && oldState.channel?.members.some(member => member.user.id === client.user.id);
+
+	if(botInNewChannel) {
+		if(triggeredByBot) {
+			setTimeout(async () => {
+				await greetings();
+			}, 1000)
+		} else {
+			await welcome(newState.member.id.toString());
+		}
+	} else if (botInOldChannel) {
+		if(oldState.channel.members.size < 2 && botInVoice) {
+			console.log("Leaving voice soon...");
+			setTimeout(() => {
+				if(oldState.channel.members.size < 2) {
+					newState.guild.members.me.voice?.disconnect()
+					console.log("Left voice");
+				} else {
+					console.log("Never mind. I'm no longer alone");
+				}
+				}, 3500);
+		}
+	}
+	if(!botInVoice && !triggeredByBot && newState.channel) {
+		const userId = newState.member.id.toString()
+		if(await r.sIsMember("AUTO_JOIN_USERS", userId)) {
+			const connection = joinVoiceChannel({
+				channelId: newState.channel.id,
+				guildId: newState.guild.id,
+				adapterCreator: newState.guild.voiceAdapterCreator,
+				selfDeaf: false,
+			})
+			connection.subscribe(player);
+		}
+	}
 });
 
 client.login(process.env.DISCORD_TOKEN);

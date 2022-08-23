@@ -1,11 +1,7 @@
 import {ChatInputCommandInteraction, GuildMember, SlashCommandBuilder} from 'discord.js';
-import { EndBehaviorType, joinVoiceChannel } from '@discordjs/voice';
+import { joinVoiceChannel } from '@discordjs/voice';
 import { player } from '../voice';
-import { createWriteStream } from 'node:fs';
-import { pipeline } from 'node:stream';
-import * as prism from 'prism-media';
 import { Command } from "./command";
-import * as child_process from "child_process";
 
 
 const command: Command = {

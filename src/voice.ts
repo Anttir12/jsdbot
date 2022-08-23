@@ -10,11 +10,9 @@ interface SoundItem {
 }
 
 const player = createAudioPlayer();
-const r = createClient({
+export const r = createClient({
     url: process.env.REDIS_URL,
 });
-
-
 
 export const initialiseVoiceThing = async () => {
 	await r.connect();
@@ -27,7 +25,6 @@ export const initialiseVoiceThing = async () => {
             createAndPlayResource(soundItem);
         }
         else if (player.state.status === 'idle') {
-
             const soundJson = await r.lPop('SOUND_QUEUE');
             if (soundJson) {
                 const soundItem: SoundItem = JSON.parse(soundJson);
