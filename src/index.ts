@@ -58,13 +58,14 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 	const botInVoice = Boolean(newState.guild.members.me.voice.channel);
 	const botInNewChannel = botInVoice && newState.channel?.members.some(member => member.user.id === client.user.id);
 	const botInOldChannel = botInVoice && oldState.channel?.members.some(member => member.user.id === client.user.id);
+	const changedChannel = newState.channel?.id !== oldState.channel?.id;
 
 	if(botInNewChannel) {
 		if(triggeredByBot) {
 			setTimeout(async () => {
 				await greetings();
 			}, 1000)
-		} else {
+		} else if (changedChannel){
 			await welcome(newState.member.id.toString());
 		}
 	} else if (botInOldChannel) {
