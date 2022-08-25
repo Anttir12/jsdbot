@@ -67,7 +67,7 @@ const command: Command = {
                     opusStream.pipe(oggStream).pipe(ws);
 
                     await interaction.reply({
-                        content: `Listening you! your stt_token: ${wsToken}`,
+                        content: `Listening you! Your stt feed: https://www.dbot.devduck.fi/stt/feed/${wsToken}`,
                         ephemeral: true});
                 } else {
                     await interaction.reply({content: 'Failed to get WS token', ephemeral: true})
