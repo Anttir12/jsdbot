@@ -1,7 +1,7 @@
 # jsdbot
 
 jsdbot is a Discord bot that can play sounds from dbot and music/whatever from youtube. It can also listen to voice and send that information to dbot for
-further analysis. This bot can be controlled using the dbot, which is a web interface where users can save sound clips for later use. 
+further analysis. This bot can be controlled using the [dbot](https://github.com/Anttir12/dbot), which is a web interface where users can save sound clips for later use. 
 
 ## Features
 Play sounds stored in dbot
