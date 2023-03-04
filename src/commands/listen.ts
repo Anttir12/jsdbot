@@ -49,25 +49,34 @@ const command: Command = {
                     });
 
                     ws.on('open', () => {
-                        console.log("Opened WebSocket connection!")
-                        console.log("Starting to listen!")
+                        console.log("Opened WebSocket connection!");
+                        console.log("Starting to listen!");
                     })
 
                     ws.on('error', (err) => {
-                        console.log("Websocket error!")
-                        console.log(err)
-                        killListening(userId)
+                        console.log("Websocket error!");
+                        console.log(err);
+                        killListening(userId);
                     })
 
                     ws.on('closed', () => {
-                        console.log("Closed WebSocket connection!")
-                        killListening(userId)
+                        console.log("Closed WebSocket connection!");
+                        killListening(userId);
                     })
+
+                    /*
+                    // To save the file locally for test purposes
+                    import * as fs from 'fs';
+                    const writeStream = fs.createWriteStream('/tmp/jsdbot/output.opus')
+                    opusStream.pipe(oggStream).pipe(writeStream);
+                     */
 
                     opusStream.pipe(oggStream).pipe(ws);
 
+                    const sttFeed = `${process.env.DBOT_STT_FEED}${wsToken}`;
+                    console.log("SttFeed: "+sttFeed);
                     await interaction.reply({
-                        content: `Listening you! Your stt feed: https://www.dbot.devduck.fi/stt/feed/${wsToken}`,
+                        content: `Listening you! Your stt feed: ${sttFeed}`,
                         ephemeral: true});
                 } else {
                     await interaction.reply({content: 'Failed to get WS token', ephemeral: true})
