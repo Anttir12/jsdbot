@@ -1,6 +1,7 @@
-import { createAudioPlayer, createAudioResource } from '@discordjs/voice';
+import {createAudioPlayer, createAudioResource, joinVoiceChannel} from '@discordjs/voice';
 import { createClient } from 'redis';
 import 'dotenv/config';
+import {VoiceBasedChannel, VoiceChannel} from 'discord.js';
 
 interface SoundItem {
     path: string,
@@ -67,4 +68,14 @@ const showQueue = async (): Promise<string[] | null> => {
     return null;
 }
 
-export { player, clearQueue, showQueue };
+const joinVoice = (voiceChannel: VoiceChannel|VoiceBasedChannel) => {
+    const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+        selfDeaf: false,
+    });
+    connection.subscribe(player);
+}
+
+export { player, clearQueue, showQueue, joinVoice };

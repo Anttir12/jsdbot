@@ -6,8 +6,8 @@ import { Client, GatewayIntentBits, Collection } from 'discord.js';
 import 'dotenv/config';
 import {Command} from "./commands/command";
 import {greetings, initialiseDbotClient, welcome} from "./dbot-client";
-import {initialiseVoiceThing, player, r} from "./voice";
-import {getVoiceConnection, joinVoiceChannel} from "@discordjs/voice";
+import {initialiseVoiceThing, joinVoice, r} from "./voice";
+import {getVoiceConnection} from "@discordjs/voice";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 
@@ -85,13 +85,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 	if(!botInVoice && !triggeredByBot && newState.channel) {
 		const userId = newState.member.id.toString()
 		if(await r.sIsMember("AUTO_JOIN_USERS", userId)) {
-			const connection = joinVoiceChannel({
-				channelId: newState.channel.id,
-				guildId: newState.guild.id,
-				adapterCreator: newState.guild.voiceAdapterCreator,
-				selfDeaf: false,
-			})
-			connection.subscribe(player);
+			joinVoice(newState.channel)
 		}
 	}
 });
