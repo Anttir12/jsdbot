@@ -48,19 +48,26 @@ const command: Command = {
                         },
                     });
 
-                    ws.on('open', () => {
+                    ws.socket.addEventListener('open', () => {
                         console.log("Opened WebSocket connection!");
                         console.log("Starting to listen!");
                     })
 
-                    ws.on('error', (err) => {
+                    ws.socket.addEventListener('error', (err) => {
                         console.log("Websocket error!");
                         console.log(err);
                         killListening(userId);
                     })
 
-                    ws.on('closed', () => {
+                    ws.socket.addEventListener('close', (cls) => {
                         console.log("Closed WebSocket connection!");
+                        console.log(cls);
+                        killListening(userId);
+                    })
+
+                    ws.socket.addEventListener('message', (cls) => {
+                        console.log("Sent data");
+                        console.log(cls);
                         killListening(userId);
                     })
 
@@ -74,7 +81,7 @@ const command: Command = {
                     opusStream.pipe(oggStream).pipe(ws);
 
                     const sttFeed = `${process.env.DBOT_STT_FEED}${wsToken}`;
-                    console.log("SttFeed: "+sttFeed);
+                    //console.log("SttFeed: "+sttFeed);
                     await interaction.reply({
                         content: `Listening you! Your stt feed: ${sttFeed}`,
                         ephemeral: true});

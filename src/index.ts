@@ -9,12 +9,10 @@ import {greetings, initialiseDbotClient, welcome} from "./dbot-client";
 import {initialiseVoiceThing, joinVoice, r} from "./voice";
 import {getVoiceConnection} from "@discordjs/voice";
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
-
-client.once('ready', () => {
-	console.log('Ready!');
-	//console.log(generateDependencyReport());
-});
+const client = new Client({ intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildVoiceStates,
+]});
 
 // Dynamically load and register commands from commands directory
 const commands = new Collection<string, Command>();
@@ -85,9 +83,23 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 	if(!botInVoice && !triggeredByBot && newState.channel) {
 		const userId = newState.member.id.toString()
 		if(await r.sIsMember("AUTO_JOIN_USERS", userId)) {
-			joinVoice(newState.channel)
+			joinVoice(newState.channel);
 		}
 	}
+});
+
+client.on("ready", () => {
+	console.log('Connected to Discord server');
+	//console.log(generateDependencyReport());
+});
+client.on("disconnect", () => {
+	console.log('Disconnected from Discord server');
+});
+client.on("reconnecting", () => {
+	console.log('Reconnecting to Discord server');
+});
+client.on('error', (error: Error) => {
+	console.error("Discord error:", error);
 });
 
 client.login(process.env.DISCORD_TOKEN);
