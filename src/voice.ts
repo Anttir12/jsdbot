@@ -47,6 +47,7 @@ const createAndPlayResource = (soundItem: SoundItem) => {
     if(inlineVolume){
         resource.volume.setVolume(volume);
     }
+    console.log(resource)
     player.play(resource);
     console.log(`Playing (Volume: ${volume ?? 1}) :  ${soundItem.path})`);
 }
