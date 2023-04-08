@@ -14,26 +14,27 @@ const command: Command = {
             option.setName("prompt")
                   .setDescription("The prompt to generate the image from")
                   .setRequired(true))
-        .addIntegerOption(option =>
-                  option.setDescription("How many images to create (1-10)")
-					    .setName("count")
-                        .setMaxValue(10)
-                        .setMinValue(1)
-                        .setRequired(true))
         .addStringOption(option =>
 			option.setName("size")
 				.setDescription("Size of the generated images")
 				.setRequired(true)
 				.addChoices(
         	    {name: "256", value:"256x256"},
-	            {name: "512", value: "512x512"},
+				{name: "512", value: "512x512"},
     	        {name: "1024", value: "1024x1024"}
-            	)).setDescription('Create an image with Dalle!'),
+				))
+		.addIntegerOption(option =>
+                  option.setDescription("How many images to create (1-10)")
+					    .setName("count")
+                        .setMaxValue(10)
+                        .setMinValue(1)
+                        .setRequired(false))
+		.setDescription('Create an image with Dalle!'),
 
 	async execute(interaction: ChatInputCommandInteraction) {
 		const prompt = interaction.options.getString("prompt");
 		const size = interaction.options.getString("size");
-		const count = interaction.options.getInteger("count");
+		const count = interaction.options.getInteger("count") ?? 1;
 
 		const configuration = new Configuration({
 			apiKey: process.env.OPENAI_API_KEY,
@@ -47,7 +48,10 @@ const command: Command = {
 			size: size as CreateImageRequestSizeEnum
 		}).then(async (response) => {
 			const images = response.data as ImagesResponse;
-			const urls = images.data.map(img => new EmbedBuilder().setTitle(prompt).setImage(img.url));
+			let i = 1;
+			const urls = images.data.map(img => {
+				return new EmbedBuilder().setTitle(`image #${i++}`).setImage(img.url)
+			});
 			await reply.edit({content: `${replyMessage} with prompt "${prompt}"`, embeds: urls});
 		}).catch(async (reason) => {
 			let replyReason = `Request failed (${reason?.response?.status})`;
