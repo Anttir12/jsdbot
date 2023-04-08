@@ -46,11 +46,14 @@ const command: Command = {
 			n:  count,
 			size: size as CreateImageRequestSizeEnum
 		}).then(async (response) => {
-
 			const images = response.data as ImagesResponse;
-
 			const urls = images.data.map(img => new EmbedBuilder().setTitle(prompt).setImage(img.url));
-			await reply.edit({content: `${replyMessage} with prompt "${prompt}"`, embeds: urls})
+			await reply.edit({content: `${replyMessage} with prompt "${prompt}"`, embeds: urls});
+		}).catch(async (reason) => {
+			let replyReason = `Request failed (${reason?.response?.status})`;
+			let errorMessage = reason?.response?.data?.error?.message;
+			let errorLine2 = errorMessage ? `\n${errorMessage}` : "";
+			await reply.edit({content: `${replyReason}${errorLine2}`});
 		});
 	},
 };
