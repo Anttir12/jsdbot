@@ -29,18 +29,23 @@ const command: Command = {
         .setDescription('Size of the generated images')
         .setRequired(true)
         .addChoices(
-          { name: '256x256', value: '256x256' },
-          { name: '512x512', value: '512x512' },
           { name: '1024x1024', value: '1024x1024' },
           { name: '1792x1024', value: '1792x1024' },
           { name: '1024x1792', value: '1024x1792' },
         ),
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName('hd')
+        .setDescription('For enhanced detail')
+        .setRequired(false),
     )
     .setDescription('Create an image with Dalle!'),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const prompt = interaction.options.getString('prompt');
     const size = interaction.options.getString('size');
+    const quality = interaction.options.getBoolean('hd') ? 'hd' : 'standard';
 
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -55,6 +60,7 @@ const command: Command = {
         model: 'dall-e-3',
         prompt: prompt,
         n: 1,
+        quality: quality,
         size: size as sizeChoices,
       })
       .then(async (response) => {
