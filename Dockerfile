@@ -1,4 +1,4 @@
-FROM node:lts
+FROM node:22-slim
 
 RUN mkdir /app
 WORKDIR /app
@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y ffmpeg
 
 ADD . /app/
 
-RUN npm install -g typescript
-RUN npm install
-RUN npm run build
+RUN corepack enable \
+    && corepack prepare pnpm@10.15.0 --activate
+
+RUN pnpm install --force
+RUN pnpm build
