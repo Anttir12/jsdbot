@@ -3,7 +3,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from 'discord.js';
-import { Command } from './command';
+import { Command } from './command.js';
 import OpenAI from 'openai';
 import 'dotenv/config';
 
@@ -43,7 +43,7 @@ const command: Command = {
     .setDescription('Create an image with Dalle!'),
 
   async execute(interaction: ChatInputCommandInteraction) {
-    const prompt = interaction.options.getString('prompt');
+    const prompt = interaction.options.getString('prompt')!;
     const size = interaction.options.getString('size');
     const quality = interaction.options.getBoolean('hd') ? 'hd' : 'standard';
 
@@ -66,8 +66,10 @@ const command: Command = {
       .then(async (response) => {
         const images = response.data;
         let i = 1;
-        const urls = images.map((img) => {
-          return new EmbedBuilder().setTitle(`image #${i++}`).setImage(img.url);
+        const urls = images?.map((img) => {
+          return new EmbedBuilder()
+            .setTitle(`image #${i++}`)
+            .setImage(img.url ?? null);
         });
         await reply.edit({
           content: `${replyMessage} with prompt "${prompt}"`,

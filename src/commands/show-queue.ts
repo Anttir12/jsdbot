@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { Command } from './command';
-import { showQueue } from '../voice';
+import { Command } from './command.js';
+import { showQueue } from '../voice.js';
 
 const command: Command = {
   data: new SlashCommandBuilder()

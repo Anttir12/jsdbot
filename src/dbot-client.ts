@@ -1,7 +1,6 @@
 import 'dotenv/config';
-import axios from 'axios';
 
-const BASE_URL = process.env.DBOT_BASE_URL;
+const BASE_URL = process.env.DBOT_BASE_URL!;
 
 interface AccessToken {
   access: string;
@@ -12,142 +11,140 @@ interface Tokens {
   refresh: string;
 }
 
-let currentTokens: Tokens = null;
+let currentTokens: Tokens | null = null;
+
+/**
+ * Small helper to POST JSON with fetch
+ */
+async function postJson<T>(
+  url: string,
+  body: any,
+  headers: Record<string, string> = {},
+): Promise<{ status: number; data: T }> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+    body: JSON.stringify(body ?? {}),
+  });
+
+  let data: T | null = null;
+  try {
+    data = (await res.json()) as T;
+  } catch {
+    /* ignore non-JSON bodies */
+  }
+
+  return { status: res.status, data: data as T };
+}
 
 const getTokens = async () => {
   try {
     console.log('Trying to get tokens.');
-    const tokenResponse = await axios.post<Tokens>(
-      BASE_URL + 'token',
-      {
-        username: process.env.DBOT_USERNAME,
-        password: process.env.DBOT_PASSWORD,
-      },
-      {
-        headers: { Accept: 'application/json' },
-      },
-    );
-    if (
-      tokenResponse &&
-      tokenResponse.status >= 200 &&
-      tokenResponse.status < 300
-    ) {
-      currentTokens = tokenResponse.data;
+    const { status, data } = await postJson<Tokens>(BASE_URL + 'token', {
+      username: process.env.DBOT_USERNAME,
+      password: process.env.DBOT_PASSWORD,
+    });
+    if (status >= 200 && status < 300) {
+      currentTokens = data;
     }
   } catch (e) {
     currentTokens = null;
-    console.log('Failed to get tokens.');
-    console.log(e.response);
+    console.log('Failed to get tokens.', e);
     setTimeout(getTokens, 10000);
   }
 };
 
 const refreshAccessToken = async () => {
+  if (!currentTokens) return;
   try {
-    const tokenResponse = await axios.post<AccessToken>(
+    const { status, data } = await postJson<AccessToken>(
       BASE_URL + 'token/refresh',
-      {
-        refresh: currentTokens.refresh,
-      },
-      {
-        headers: { Accept: 'application/json' },
-      },
+      { refresh: currentTokens.refresh },
     );
-    if (
-      tokenResponse &&
-      tokenResponse.status >= 200 &&
-      tokenResponse.status < 300
-    ) {
-      currentTokens.access = tokenResponse.data.access;
+    if (status >= 200 && status < 300) {
+      currentTokens.access = data.access;
     }
   } catch (e) {
     currentTokens = null;
-    console.log('Failed to refresh access tokens.');
-    console.log(e.response);
+    console.log('Failed to refresh access tokens.', e);
     setTimeout(getTokens, 5000);
   }
 };
 
 export const getWsToken = async () => {
-  let wsToken = null;
+  if (!currentTokens) return null;
   try {
-    const response = await axios.post(
+    const { status, data } = await postJson<{ token: string }>(
       BASE_URL + 'token/ws',
       {},
-      { headers: { Authorization: 'Bearer ' + currentTokens.access } },
+      { Authorization: `Bearer ${currentTokens.access}` },
     );
-    if (response && response.status >= 200 && response.status < 300) {
-      wsToken = response.data.token;
+    if (status >= 200 && status < 300) {
+      return data.token;
     }
   } catch (e) {
-    console.log('Failed to get ws token.');
-    console.log(e.response);
+    console.log('Failed to get ws token.', e);
   }
-  return wsToken;
+  return null;
 };
 
 export const initialiseDbotClient = async () => {
   await getTokens();
-  setInterval(getTokens, 21600000); // refresh token is valid for 24 hours but refresh every 6 tokens anyway
-  setInterval(refreshAccessToken, 150000); // Access token is valid for 5 minutes. let's refresh it every 2,5 minutes
+  setInterval(getTokens, 21600000);
+  setInterval(refreshAccessToken, 150000);
 };
 
 export const play = async (
   ytUrl: string,
-  volume?: number,
+  volume?: number | null,
 ): Promise<boolean> => {
-  if (!currentTokens) {
-    return false;
-  }
+  if (!currentTokens) return false;
   try {
-    const response = await axios.post(
+    const { status } = await postJson(
       BASE_URL + 'bot/play_yt',
-      { yt_url: ytUrl, volume: volume },
-      { headers: { Authorization: 'Bearer ' + currentTokens.access } },
+      { yt_url: ytUrl, volume },
+      { Authorization: `Bearer ${currentTokens.access}` },
     );
-    console.log('Response status for play: ' + response.status);
-    return response.status >= 200 && response.status < 300;
+    console.log('Response status for play: ' + status);
+    return status >= 200 && status < 300;
   } catch (e) {
-    console.log('Play failed');
-    console.log(e.response);
+    console.log('Play failed', e);
     return false;
   }
 };
 
 export const welcome = async (userId: string): Promise<boolean> => {
-  if (!currentTokens) {
-    return false;
-  }
+  if (!currentTokens) return false;
   try {
-    const response = await axios.post(
+    const { status } = await postJson(
       BASE_URL + 'bot/discord_event/welcome',
       { user_id: userId },
-      { headers: { Authorization: 'Bearer ' + currentTokens.access } },
+      { Authorization: `Bearer ${currentTokens.access}` },
     );
-    console.log('Response status for welcome: ' + response.status);
-    return response.status >= 200 && response.status < 300;
+    console.log('Response status for welcome: ' + status);
+    return status >= 200 && status < 300;
   } catch (e) {
-    console.log('welcome failed');
-    console.log(e.response);
+    console.log('welcome failed', e);
     return false;
   }
 };
 
 export const greetings = async (): Promise<boolean> => {
-  if (!currentTokens) {
-    return false;
-  }
+  if (!currentTokens) return false;
   try {
-    const response = await axios.post(
+    const { status } = await postJson(
       BASE_URL + 'bot/discord_event/greetings',
       {},
-      { headers: { Authorization: 'Bearer ' + currentTokens.access } },
+      { Authorization: `Bearer ${currentTokens.access}` },
     );
-    console.log('Response status for greetings: ' + response.status);
-    return response.status >= 200 && response.status < 300;
+    console.log('Response status for greetings: ' + status);
+    return status >= 200 && status < 300;
   } catch (e) {
-    console.log('greetings failed');
-    console.log(e.response);
+    console.log('greetings failed', e);
     return false;
   }
 };

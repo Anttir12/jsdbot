@@ -4,8 +4,8 @@ import {
   SlashCommandBuilder,
   VoiceBasedChannel,
 } from 'discord.js';
-import { joinVoice } from '../voice';
-import { Command } from './command';
+import { joinVoice } from '../voice.js';
+import { Command } from './command.js';
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -13,7 +13,7 @@ const command: Command = {
     .setDescription('Joins voice with you'),
   async execute(interaction: ChatInputCommandInteraction) {
     const member = interaction.member as GuildMember;
-    const voiceChannel: VoiceBasedChannel = member.voice?.channel;
+    const voiceChannel: VoiceBasedChannel | null = member.voice?.channel;
     if (voiceChannel) {
       joinVoice(voiceChannel);
       await interaction.reply({ content: 'Joined!', ephemeral: true });

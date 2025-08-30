@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { Command } from './command';
-import { play } from '../dbot-client';
+import { Command } from './command.js';
+import { play } from '../dbot-client.js';
 
 const command: Command = {
   data: new SlashCommandBuilder()
@@ -16,7 +16,7 @@ const command: Command = {
     )
     .setDescription('You can play music from youtube'),
   async execute(interaction) {
-    const url = interaction.options.getString('url');
+    const url = interaction.options.getString('url')!;
     const volume = interaction.options.getNumber('volume');
     await interaction.reply('Please wait...');
     console.log('Attempting to play ' + url);
@@ -29,7 +29,7 @@ const command: Command = {
     const t1 = setTimeout(() => {
       interaction.editReply(
         'If this takes longer than 15 minutes this command will fail. If there ' +
-          'are no errors the download will continue in background event if this command failed \n' +
+          'are no errors the download will continue in background even if this command failed \n' +
           'https://tenor.com/view/please-be-patient-with-me-just-relax-persevering-sorry-to-keep-you-waiting-angrily-ever-after-gif-15122848',
       );
     }, 120000);

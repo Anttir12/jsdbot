@@ -1,13 +1,14 @@
 import { readdirSync } from 'fs';
-import { join } from 'path';
+import { dirname, join } from 'path';
 //import { generateDependencyReport } from '@discordjs/voice';
 import { Client, GatewayIntentBits, Collection } from 'discord.js';
 
 import 'dotenv/config';
-import { Command } from './commands/command';
-import { greetings, initialiseDbotClient, welcome } from './dbot-client';
-import { initialiseVoiceThing, joinVoice, r } from './voice';
+import { Command } from './commands/command.js';
+import { greetings, initialiseDbotClient, welcome } from './dbot-client.js';
+import { initialiseVoiceThing, joinVoice, r } from './voice.js';
 import { getVoiceConnection } from '@discordjs/voice';
+import { fileURLToPath } from 'url';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
@@ -15,6 +16,8 @@ const client = new Client({
 
 // Dynamically load and register commands from commands directory
 const commands = new Collection<string, Command>();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const commandsPath = join(__dirname, 'commands');
 const commandFiles = readdirSync(commandsPath).filter(
   (file) => file.endsWith('.js') && !file.startsWith('command'),
@@ -22,7 +25,7 @@ const commandFiles = readdirSync(commandsPath).filter(
 
 (async () => {
   for (const file of commandFiles) {
-    const filePath = join(commandsPath, file).slice(0, -3); // Slice the .js
+    const filePath = join(commandsPath, file); // Slice the .js
     const commandFile = await import(filePath);
     commands.set(commandFile.command.data.name, commandFile.command);
   }
@@ -54,17 +57,18 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-  const triggeredByBot = newState.member.user.id === client.user.id;
-  const botInVoice = Boolean(newState.guild.members.me.voice.channel);
+  const triggeredByBot =
+    newState?.member?.user.id === client?.user?.id && client?.user?.id !== null;
+  const botInVoice = Boolean(newState?.guild?.members?.me?.voice.channel);
   const botInNewChannel =
     botInVoice &&
     newState.channel?.members.some(
-      (member) => member.user.id === client.user.id,
+      (member) => member.user.id === client?.user?.id,
     );
   const botInOldChannel =
     botInVoice &&
     oldState.channel?.members.some(
-      (member) => member.user.id === client.user.id,
+      (member) => member.user.id === client?.user?.id,
     );
   const changedChannel = newState.channel?.id !== oldState.channel?.id;
 
@@ -73,16 +77,16 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       setTimeout(async () => {
         await greetings();
       }, 1000);
-    } else if (changedChannel) {
+    } else if (changedChannel && newState?.member) {
       await welcome(newState.member.id.toString());
     }
   } else if (botInOldChannel) {
-    if (oldState.channel.members.size < 2 && botInVoice) {
+    if (oldState!.channel!.members.size < 2 && botInVoice) {
       console.log('Leaving voice soon...');
       setTimeout(() => {
-        if (oldState.channel.members.size < 2) {
+        if (oldState!.channel!.members.size < 2) {
           const connection = getVoiceConnection(newState.guild.id);
-          connection.destroy();
+          connection?.destroy();
           console.log('Left voice');
         } else {
           console.log("Never mind. I'm no longer alone");
@@ -91,14 +95,14 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     }
   }
   if (!botInVoice && !triggeredByBot && newState.channel) {
-    const userId = newState.member.id.toString();
+    const userId = newState!.member!.id.toString();
     if (await r.sIsMember('AUTO_JOIN_USERS', userId)) {
       joinVoice(newState.channel);
     }
   }
 });
 
-client.on('ready', () => {
+client.on('clientReady', () => {
   console.log('Connected to Discord server');
   //console.log(generateDependencyReport());
 });

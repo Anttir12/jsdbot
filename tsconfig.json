@@ -1,12 +1,26 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
-    "noImplicitAny": false,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "sourceMap": false,
+    /* Target modern JS output for Node 22 */
+    "target": "ES2022",
+
+    /* Use Node's ESM system */
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    /* Project layout */
+    "rootDir": "src",
     "outDir": "dist",
+
+    /* Type checking & ergonomics */
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+
+    /* Helpful extras */
+    "resolveJsonModule": true,
+    "noEmitOnError": true,
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
